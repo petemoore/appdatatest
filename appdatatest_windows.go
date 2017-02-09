@@ -8,6 +8,7 @@ import (
 	"unicode/utf8"
 	"unsafe"
 
+	"github.com/taskcluster/generic-worker/runtime"
 	"github.com/taskcluster/runlib/win32"
 )
 
@@ -24,6 +25,16 @@ func Run(username, password, appdataFolder string) {
 	fmt.Println("APPDATA test")
 
 	var err error
+
+	u := &runtime.OSUser{
+		Name:	 username,
+		Password: password,
+	}
+	err = u.CreateNew()
+	if err != nil {
+		panic(err)
+	}
+
 	var user syscall.Handle
 	var name *uint16
 	var env uintptr
