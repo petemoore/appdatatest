@@ -27,7 +27,7 @@ func Run(username, password, appdataFolder string) {
 	var err error
 
 	u := &runtime.OSUser{
-		Name:	 username,
+		Name:     username,
 		Password: password,
 	}
 	err = u.CreateNew()
@@ -51,15 +51,7 @@ func Run(username, password, appdataFolder string) {
 		Username: name,
 	}
 
-	err = win32.SetAndCreateFolder(user, &win32.FOLDERID_RoamingAppData, appdataFolder)
-	if err != nil {
-		panic(err)
-	}
-
-	err = win32.CreateEnvironmentBlock(&env, user, false)
-	if err != nil {
-		panic(err)
-	}
+	// first log on user ....
 
 	user, err = win32.LogonUser(
 		syscall.StringToUTF16Ptr(username),
@@ -78,6 +70,8 @@ func Run(username, password, appdataFolder string) {
 		}
 	}()
 
+	// now load user profile ....
+
 	err = win32.LoadUserProfile(user, pinfo)
 	if err != nil {
 		panic(err)
@@ -95,11 +89,22 @@ func Run(username, password, appdataFolder string) {
 		}
 	}()
 
+	// now redirect APPDATA ....
+
+	err = win32.SetAndCreateFolder(user, &win32.FOLDERID_RoamingAppData, appdataFolder)
+	if err != nil {
+		panic(err)
+	}
+
+	// now query environment vars ....
+
 	err = win32.CreateEnvironmentBlock(&env, user, false)
 	if err != nil {
 		panic(err)
 	}
 	defer win32.DestroyEnvironmentBlock(env)
+
+	// now output results ....
 
 	var varStartOffset uint
 	for {
