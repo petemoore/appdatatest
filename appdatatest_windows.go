@@ -13,12 +13,13 @@ import (
 
 func main() {
 	Run(
-		os.Args[1],
-		os.Args[2],
+		os.Args[1], // username
+		os.Args[2], // password
+		os.Args[3], // new APPDATA folder location
 	)
 }
 
-func Run(username, password string) {
+func Run(username, password, appdataFolder string) {
 
 	fmt.Println("APPDATA test")
 
@@ -37,6 +38,11 @@ func Run(username, password string) {
 		Size:     uint32(unsafe.Sizeof(*pinfo)),
 		Flags:    win32.PI_NOUI,
 		Username: name,
+	}
+
+	err = win32.SetAndCreateFolder(user, &win32.FOLDERID_RoamingAppData, appdataFolder)
+	if err != nil {
+		panic(err)
 	}
 
 	err = win32.CreateEnvironmentBlock(&env, user, false)
